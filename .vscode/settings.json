@@ -1,0 +1,6 @@
+{
+    "[json][jsonc][typescript]": {
+        "editor.rulers": [120],
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+}
