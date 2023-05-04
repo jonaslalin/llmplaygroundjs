@@ -1,6 +1,7 @@
 {
+    "typescript.tsdk": "node_modules/typescript/lib",
     "[json][jsonc][typescript]": {
         "editor.rulers": [120],
         "editor.defaultFormatter": "esbenp.prettier-vscode"
-    }
+    },
 }
