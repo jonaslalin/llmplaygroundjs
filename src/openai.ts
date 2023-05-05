@@ -3,35 +3,39 @@ import { ChatCompletionRequestMessage, ChatCompletionResponseMessage, Configurat
 import { readFile } from "fs/promises";
 
 export async function getApiKey() {
+    let apiKey = process.env.OPENAI_API_KEY;
+    if (apiKey) {
+        return apiKey;
+    }
     try {
         var dotEnv = await readFile(".env", "utf8");
     } catch (err) {
         throw new Error("Can't find .env file in project root");
     }
-    const re = /OPENAI_API_KEY=(?<apiKey>.*)$/m;
+    const re = /^OPENAI_API_KEY=(?<apiKey>.*)$/m;
     const result = re.exec(dotEnv);
-    const apiKey = result?.groups?.apiKey;
+    apiKey = result?.groups?.apiKey;
     if (!apiKey) {
         throw new Error("Can't find OPENAI_API_KEY inside .env file");
     }
     return apiKey;
 }
 
-export function getClient(apiKey: string) {
+export function makeClient(apiKey: string) {
     const configuration = new Configuration({ apiKey });
     const client = new OpenAIApi(configuration);
     return client;
 }
 
 export async function getCompletion(
-    client: OpenAIApi,
+    messages: Array<ChatCompletionRequestMessage>,
     {
+        client,
         model = "gpt-3.5-turbo",
-        messages,
         temperature = 0,
     }: {
+        client: OpenAIApi;
         model?: string;
-        messages: Array<ChatCompletionRequestMessage | ChatCompletionResponseMessage>;
         temperature?: number;
     }
 ) {
@@ -40,37 +44,75 @@ export async function getCompletion(
     return response;
 }
 
-export class StatefulChat {
+export class Client {
+    private static client: OpenAIApi;
+
+    private constructor() {}
+
+    private static async makeClient() {
+        const apiKey = await getApiKey();
+        const client = makeClient(apiKey);
+        return client;
+    }
+
+    private static async getClient() {
+        if (!Client.client) {
+            Client.client = await Client.makeClient();
+        }
+        return Client.client;
+    }
+
+    static async getCompletion(
+        messages: Array<ChatCompletionRequestMessage>,
+        {
+            model = "gpt-3.5-turbo",
+            temperature = 0,
+        }: {
+            model?: string;
+            temperature?: number;
+        }
+    ) {
+        const client = await Client.getClient();
+        const response = await getCompletion(messages, { client, model, temperature });
+        return response;
+    }
+}
+
+export class Chat {
     history: Array<ChatCompletionRequestMessage | ChatCompletionResponseMessage> = [];
 
-    constructor(private client: OpenAIApi) {}
+    constructor() {}
 
-    toDebugMessage(message: ChatCompletionRequestMessage | ChatCompletionResponseMessage) {
+    static toDebugMessage(message: ChatCompletionRequestMessage | ChatCompletionResponseMessage) {
         return `### ${message.role.toUpperCase()} ###\n${message.content}\n\n`;
     }
 
     async getCompletion(
-        messages: Array<ChatCompletionRequestMessage | ChatCompletionResponseMessage>,
+        messages: Array<ChatCompletionRequestMessage>,
         {
-            debug = true,
+            model = "gpt-3.5-turbo",
+            temperature = 0,
             save = false,
+            debug = true,
         }: {
-            debug?: boolean;
+            model?: string;
+            temperature?: number;
             save?: boolean;
+            debug?: boolean;
         } = {}
     ) {
-        let newHistory = [...this.history, ...messages] as Array<
+        let newMessages = [...this.history, ...messages] as Array<
             ChatCompletionRequestMessage | ChatCompletionResponseMessage
         >;
-        const response = await getCompletion(this.client, { messages: newHistory });
-        newHistory = [...newHistory, response];
-        if (debug) {
-            newHistory
-                .map((message) => this.toDebugMessage(message))
-                .forEach((debugMessage) => console.log(debugMessage));
-        }
+        const response = await Client.getCompletion(newMessages, { model, temperature });
+        newMessages = [...newMessages, response];
         if (save) {
-            this.history = newHistory;
+            this.history = newMessages;
+        }
+        if (debug) {
+            newMessages
+                .map((message) => Chat.toDebugMessage(message))
+                .forEach((debugMessage) => console.log(debugMessage));
         }
         return response;
     }

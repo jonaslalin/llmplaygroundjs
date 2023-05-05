@@ -1,18 +1,16 @@
 import * as openai from "../src/openai";
 
 async function main() {
-    const apiKey = await openai.getApiKey();
-    const client = openai.getClient(apiKey);
-    const chat = new openai.StatefulChat(client);
+    const chat = new openai.Chat();
 
-    let response = await chat.getCompletion([
+    await chat.getCompletion([
         {
             role: "user",
             content: "Tell me a joke.",
         },
     ]);
 
-    response = await chat.getCompletion([
+    const response = await chat.getCompletion([
         {
             role: "system",
             content:
@@ -42,7 +40,6 @@ async function main() {
             content: "Tell me a joke about an apple and a banana.",
         },
     ]);
-
     const joke = JSON.parse(response.content);
     console.log("Parsed JavaScript object:", joke);
 }
