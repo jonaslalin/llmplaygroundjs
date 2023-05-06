@@ -10,6 +10,7 @@
         "compile": "rm -rf dist && tsc --watch"
     },
     "dependencies": {
+        "hnswlib-node": "^1.4.2",
         "langchain": "^0.0.70",
         "openai": "^3.2.1"
     },
