@@ -2,18 +2,20 @@
     "name": "llmplaygroundjs",
     "version": "0.0.1",
     "description": "",
-    "main": "index.js",
-    "scripts": {
-        "compile": "tsc --watch"
-    },
     "author": "Jonas Lalin",
     "license": "ISC",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "compile": "rm -rf dist && tsc --watch"
+    },
     "dependencies": {
-        "openai": "^3.2.0"
+        "langchain": "^0.0.70",
+        "openai": "^3.2.1"
     },
     "devDependencies": {
         "@tsconfig/node18": "^2.0.0",
-        "@types/node": "^18.16.0",
-        "typescript": "^5.0.0"
+        "@types/node": "^18.16.5",
+        "typescript": "^5.0.4"
     }
 }
