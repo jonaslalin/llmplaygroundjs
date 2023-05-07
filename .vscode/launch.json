@@ -2,16 +2,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Program (with FNM)",
             "type": "node",
             "request": "launch",
+            "name": "Launch Program (with FNM)",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "envFile": "${workspaceFolder}/.env",
             "runtimeExecutable": "fnm",
             "runtimeArgs": ["exec", "node"],
             "program": "${file}",
             "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-            "skipFiles": ["<node_internals>/**"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "skipFiles": ["<node_internals>/**"]
         }
     ]
 }

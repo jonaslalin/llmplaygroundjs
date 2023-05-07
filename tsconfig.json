@@ -1,6 +1,5 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": "@tsconfig/node18/tsconfig.json",
     "compilerOptions": {
         "module": "nodenext",
         "moduleResolution": "nodenext",
@@ -8,5 +7,6 @@
         "rootDir": ".",
         "sourceMap": true
     },
+    "extends": "@tsconfig/node18/tsconfig.json",
     "include": ["src/**/*", "tests/**/*"]
 }

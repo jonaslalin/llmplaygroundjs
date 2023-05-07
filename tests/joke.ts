@@ -1,19 +1,16 @@
-import * as openai from "../src/openai.js";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { HumanChatMessage, SystemChatMessage } from "langchain/schema";
 
-const chat = new openai.Chat();
+const chat = new ChatOpenAI();
 
-await chat.getCompletion([
-    {
-        role: "user",
-        content: "Tell me a joke.",
-    },
-]);
+let response;
 
-const response = await chat.getCompletion([
-    {
-        role: "system",
-        content:
-            "Your task is to tell jokes.\n" +
+response = await chat.call([new HumanChatMessage("Tell me a joke.")]);
+console.log(response.text);
+
+response = await chat.call([
+    new SystemChatMessage(
+        "Your task is to tell me funny jokes.\n" +
             "Only reply with a minified JSON object using the following JSON schema:\n" +
             "{\n" +
             '    "$schema": "https://json-schema.org/draft/2020-12/schema",\n' +
@@ -32,12 +29,9 @@ const response = await chat.getCompletion([
             "        }\n" +
             "    },\n" +
             '    "required": ["answer", "question"]\n' +
-            "}",
-    },
-    {
-        role: "user",
-        content: "Tell me a joke about an apple and a banana.",
-    },
+            "}"
+    ),
+    new HumanChatMessage("Tell me a joke about an apple and a banana."),
 ]);
-const joke = JSON.parse(response.content);
-console.log("Parsed JavaScript object:", joke);
+console.log(response.text);
+console.log(JSON.parse(response.text));

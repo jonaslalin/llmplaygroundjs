@@ -7,12 +7,15 @@
     "type": "module",
     "main": "index.js",
     "scripts": {
-        "compile": "rm -rf dist && tsc --watch"
+        "compile": "rm -rf dist && tsc",
+        "compile:watch": "rm -rf dist && tsc --watch"
     },
     "dependencies": {
+        "canvas": "^2.11.2",
         "hnswlib-node": "^1.4.2",
         "langchain": "^0.0.70",
-        "openai": "^3.2.1"
+        "openai": "^3.2.1",
+        "pdfjs-dist": "^3.6.172"
     },
     "devDependencies": {
         "@tsconfig/node18": "^2.0.0",

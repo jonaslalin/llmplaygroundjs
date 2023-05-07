@@ -1,60 +1,31 @@
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { BaseChatMessage } from "langchain/schema";
-import { getApiKey } from "./config.js";
+import { TextLoader } from "langchain/document_loaders/fs/text";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { HNSWLib } from "langchain/vectorstores/hnswlib";
 
-export function makeClient(apiKey: string) {
-    const client = new ChatOpenAI({ openAIApiKey: apiKey });
-    return client;
-}
-
-export async function getCompletion(
-    messages: Array<BaseChatMessage>,
+export async function makeVectorStore(
+    textPath: string,
     {
-        client,
-        model = "gpt-3.5-turbo",
-        temperature = 0,
+        chunkSize = 1000,
+        chunkOverlap = 200,
+        embeddingsCacheDir = "embeddings/",
+        useEmbeddingsCache = false,
     }: {
-        client: ChatOpenAI;
-        model?: string;
-        temperature?: number;
-    }
+        chunkSize?: number;
+        chunkOverlap?: number;
+        embeddingsCacheDir?: string;
+        useEmbeddingsCache?: boolean;
+    } = {}
 ) {
-    client.modelName = model;
-    client.temperature = temperature;
-    const response = await client.call(messages);
-    return response;
-}
-
-export class Client {
-    private static client: ChatOpenAI;
-
-    private constructor() {}
-
-    private static async makeClient() {
-        const apiKey = await getApiKey();
-        const client = makeClient(apiKey);
-        return client;
+    const embeddings = new OpenAIEmbeddings();
+    if (useEmbeddingsCache) {
+        const vectorStore = await HNSWLib.load(embeddingsCacheDir, embeddings);
+        return vectorStore;
     }
-
-    private static async getClient() {
-        if (!Client.client) {
-            Client.client = await Client.makeClient();
-        }
-        return Client.client;
-    }
-
-    static async getCompletion(
-        messages: Array<BaseChatMessage>,
-        {
-            model = "gpt-3.5-turbo",
-            temperature = 0,
-        }: {
-            model?: string;
-            temperature?: number;
-        } = {}
-    ) {
-        const client = await Client.getClient();
-        const response = await getCompletion(messages, { client, model, temperature });
-        return response;
-    }
+    const loader = new TextLoader(textPath);
+    const splitter = new RecursiveCharacterTextSplitter({ chunkSize, chunkOverlap });
+    const docs = await loader.loadAndSplit(splitter);
+    const vectorStore = await HNSWLib.fromDocuments(docs, embeddings);
+    await vectorStore.save(embeddingsCacheDir);
+    return vectorStore;
 }
