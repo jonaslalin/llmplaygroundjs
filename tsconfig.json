@@ -1,12 +1,19 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "lib": ["es2022"],
         "module": "nodenext",
         "moduleResolution": "nodenext",
         "outDir": "dist",
-        "rootDir": ".",
-        "sourceMap": true
+        "rootDir": "src",
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "es2022",
+        "verbatimModuleSyntax": true
     },
-    "extends": "@tsconfig/node18/tsconfig.json",
-    "include": ["src/**/*", "tests/**/*"]
+    "include": ["src/**/*"]
 }
